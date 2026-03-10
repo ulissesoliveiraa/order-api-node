@@ -32,6 +32,7 @@ async function createOrder(req, res) {
       message: "Pedido criado com sucesso.",
       data: newOrder
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro interno ao criar pedido.",
@@ -39,6 +40,7 @@ async function createOrder(req, res) {
     });
   }
 }
+
 
 // Buscar pedido por orderId
 async function getOrderById(req, res) {
@@ -54,6 +56,7 @@ async function getOrderById(req, res) {
     }
 
     return res.status(200).json(order);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro interno ao buscar pedido.",
@@ -62,12 +65,14 @@ async function getOrderById(req, res) {
   }
 }
 
+
 // Listar todos os pedidos
 async function listOrders(req, res) {
   try {
     const orders = await Order.find();
 
     return res.status(200).json(orders);
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro interno ao listar pedidos.",
@@ -76,11 +81,14 @@ async function listOrders(req, res) {
   }
 }
 
-// Atualizar pedido
+
+// Atualizar pedido (agora permitindo atualização parcial)
 async function updateOrder(req, res) {
   try {
     const { numeroPedido } = req.params;
+    const body = req.body;
 
+    // Aqui primeiro verifico se o pedido existe
     const existingOrder = await Order.findOne({ orderId: numeroPedido });
 
     if (!existingOrder) {
@@ -89,14 +97,39 @@ async function updateOrder(req, res) {
       });
     }
 
-    const mappedOrder = mapOrderPayload(req.body);
+    // Aqui criei um objeto para armazenar somente os campos enviados
+    const updatedFields = {};
 
-    // Aqui garanto que o orderId atualizado será o mesmo passado na URL
-    mappedOrder.orderId = numeroPedido;
+    // Aqui verifico se veio valorTotal e atualizo o campo correspondente
+    if (body.valorTotal !== undefined) {
+      updatedFields.value = body.valorTotal;
+    }
 
+    // Aqui verifico se veio dataCriacao e converto para Date
+    if (body.dataCriacao !== undefined) {
+      updatedFields.creationDate = new Date(body.dataCriacao);
+    }
+
+    // Aqui verifico se vieram items e faço o mapeamento para o formato do banco
+    if (body.items !== undefined && Array.isArray(body.items)) {
+      updatedFields.items = body.items.map((item) => ({
+        productId: Number(item.idItem),
+        quantity: item.quantidadeItem,
+        price: item.valorItem
+      }));
+    }
+
+    // Caso nenhum campo válido seja enviado
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({
+        message: "Nenhum campo válido foi enviado para atualização."
+      });
+    }
+
+    // Aqui atualizo apenas os campos que foram enviados
     const updatedOrder = await Order.findOneAndUpdate(
       { orderId: numeroPedido },
-      mappedOrder,
+      updatedFields,
       { new: true }
     );
 
@@ -104,6 +137,7 @@ async function updateOrder(req, res) {
       message: "Pedido atualizado com sucesso.",
       data: updatedOrder
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro interno ao atualizar pedido.",
@@ -111,6 +145,7 @@ async function updateOrder(req, res) {
     });
   }
 }
+
 
 // Deletar pedido
 async function deleteOrder(req, res) {
@@ -128,6 +163,7 @@ async function deleteOrder(req, res) {
     return res.status(200).json({
       message: "Pedido deletado com sucesso."
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Erro interno ao deletar pedido.",
@@ -135,6 +171,7 @@ async function deleteOrder(req, res) {
     });
   }
 }
+
 
 module.exports = {
   createOrder,

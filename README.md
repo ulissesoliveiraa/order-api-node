@@ -217,6 +217,21 @@ Como evolução do projeto, poderiam ser adicionadas melhorias como:
 
 ☁️ Deploy em ambiente cloud (AWS / Azure / Render)
 
+# 📄 Documentação da API
+
+A documentação completa da API está disponível online via Postman.
+
+🔗 Acesse aqui:  
+https://documenter.getpostman.com/view/53053479/2sBXcLhdng
+
+A documentação inclui:
+
+- Descrição dos endpoints
+- Métodos HTTP utilizados
+- Parâmetros de requisição
+- Exemplos de payload
+- Exemplos de resposta da API
+
 👨‍💻 Autor
 
 José Ulisses Araújo Oliveira
